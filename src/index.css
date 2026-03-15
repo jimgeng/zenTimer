@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: var(--bg-color);
+  --color-main: var(--main-color);
+  --color-accent: var(--accent-color);
+  --color-text: var(--text-color);
+  --color-sub: var(--sub-color);
+}
+
+:root {
+  --bg-color: #323437;
+  --main-color: #e2b714;
+  --accent-color: #e2b714;
+  --text-color: #d1d0c5;
+  --sub-color: #646669;
+}
+
+body {
+  @apply bg-bg text-text transition-colors duration-200;
+  margin: 0;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
