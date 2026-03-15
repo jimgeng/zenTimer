@@ -1,3 +1,3 @@
-# MonkeyTimer
+# zenTimer
 
 MonkeyType + csTimer

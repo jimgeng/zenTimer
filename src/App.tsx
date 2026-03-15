@@ -7,7 +7,7 @@ function App() {
 
   return (
     <div>
-      <header>Zentimer</header>
+      <header>zenTimer</header>
       <main>
         <div>Scramble Here WIP</div>
         <TimerDisplay />
