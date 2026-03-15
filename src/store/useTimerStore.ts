@@ -3,13 +3,14 @@ import { persist } from "zustand/middleware";
 import { nanoid } from "nanoid";
 
 export type TimerStatus = "idle" | "inspecting" | "running" | "stopped";
+export type Penalty = "none" | "+2" | "DNF";
 
 export interface Solve {
   id: string;
   timeMs: number;
   scramble: string;
   date: number;
-  penalty: "none" | "+2" | "DNF";
+  penalty: Penalty;
 }
 
 interface TimerState {
@@ -28,39 +29,39 @@ interface TimerState {
 }
 
 export const useTimerStore = create<TimerState>()(
-  persist(
-    (set) => ({
-      status: "idle",
-      currentScramble: "Generating scramble...",
-      solves: [],
-      inspectionEnabled: true,
+  // persist(
+  (set) => ({
+    status: "idle",
+    currentScramble: "Generating scramble...",
+    solves: [],
+    inspectionEnabled: true,
 
-      setStatus: (status) => set({ status }),
-      setScramble: (currentScramble) => set({ currentScramble }),
-      addSolve: (timeMs) =>
-        set((state) => ({
-          solves: [
-            {
-              id: nanoid(),
-              timeMs,
-              scramble: state.currentScramble,
-              date: Date.now(),
-              penalty: "none",
-            },
-            ...state.solves,
-          ],
-          status: "stopped",
-        })),
-      toggleInspection: () =>
-        set((state) => ({ inspectionEnabled: !state.inspectionEnabled })),
-      deleteSolve: (id) =>
-        set((state) => ({
-          solves: state.solves.filter((s) => s.id !== id),
-        })),
-      clearSession: () => set({ solves: [] }),
-    }),
-    {
-      name: "zentimer-storage",
-    },
-  ),
+    setStatus: (status) => set({ status }),
+    setScramble: (currentScramble) => set({ currentScramble }),
+    addSolve: (timeMs) =>
+      set((state) => ({
+        solves: [
+          {
+            id: nanoid(),
+            timeMs,
+            scramble: state.currentScramble,
+            date: Date.now(),
+            penalty: "none",
+          },
+          ...state.solves,
+        ],
+        status: "stopped",
+      })),
+    toggleInspection: () =>
+      set((state) => ({ inspectionEnabled: !state.inspectionEnabled })),
+    deleteSolve: (id) =>
+      set((state) => ({
+        solves: state.solves.filter((s) => s.id !== id),
+      })),
+    clearSession: () => set({ solves: [] }),
+  }),
+  //   {
+  //     name: "zentimer-storage",
+  //   },
+  // ),
 );

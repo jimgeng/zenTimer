@@ -4,16 +4,20 @@
   --color-bg: var(--bg-color);
   --color-main: var(--main-color);
   --color-accent: var(--accent-color);
+  --color-ok: var(--green-color);
+  --color-warning: var(--yellow-color);
   --color-text: var(--text-color);
   --color-sub: var(--sub-color);
 }
 
 :root {
   --bg-color: #323437;
-  --main-color: #e2b714;
-  --accent-color: #e2b714;
+  --main-color: #14c0e2;
+  --accent-color: #1496e2;
   --text-color: #d1d0c5;
   --sub-color: #646669;
+  --green-color: #59c65d;
+  --yellow-color: #ffeb3b;
 }
 
 body {

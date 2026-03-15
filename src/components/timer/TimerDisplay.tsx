@@ -1,105 +1,77 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useRef, useState } from "react";
+import useSpacebar from "../../hooks/useSpacebar";
 import { useTimerStore } from "../../store/useTimerStore";
-import { useSpacebar } from "../../hooks/useSpacebar";
-import { formatTime } from "../../utils/timeHelpers";
+import clsx from "clsx";
+import { HOLD_TO_CONFIRM_MS } from "../../utils/constants";
+import { useInspection } from "../../hooks/useInspection";
+import { usePrecisTimer } from "../../hooks/usePrecisTimer";
+import { calculateTimerText, formatTime } from "../../utils/timeHelpers";
 
 const TimerDisplay = () => {
-  const { status, setStatus, addSolve } = useTimerStore();
+  const { status, setStatus } = useTimerStore();
+
+  // ready must be a state since we update color to be green on ready.
+  // resettedAfterSolveRef is a ref since it's just used to track whether
+  // we should go to inspecting on space down from idle, and doesn't affect rendering.
+  // if i can get away with not using state i will do it.
+  const [readyToSolve, setReadyToSolve] = useState(false);
+  const [solveTime, setSolveTime] = useState(0);
+  const readyTimeoutRef = useRef<number | null>(null);
+  const { seconds: inspectSeconds, penalty: inspectPenalty } =
+    useInspection(status);
   const timerRef = useRef<HTMLDivElement>(null);
-  const startTimeRef = useRef<number>(0);
-  const animationFrameRef = useRef<number>(0);
-  const inspectionRef = useRef<number>(15);
-  const workerRef = useRef<Worker | null>(null);
 
-  // Initialize Web Worker for scrambles
-  useEffect(() => {
-    workerRef.current = new Worker(
-      new URL("../../workers/scrambleWorker.ts", import.meta.url),
-      { type: "module" },
-    );
+  const startTimeRef = usePrecisTimer(status, timerRef);
 
-    workerRef.current.onmessage = (e) => {
-      useTimerStore.getState().setScramble(e.data.scramble);
-    };
-
-    // Generate initial scramble
-    workerRef.current.postMessage("generate");
-
-    return () => workerRef.current?.terminate();
-  }, []);
-
-  const startTimer = useCallback(() => {
-    setStatus("running");
-    startTimeRef.current = performance.now();
-
-    // Pre-generate the NEXT scramble while solving
-    workerRef.current?.postMessage("generate");
-
-    const update = () => {
-      if (timerRef.current) {
-        const delta = performance.now() - startTimeRef.current;
-        timerRef.current.textContent = formatTime(delta);
-      }
-      animationFrameRef.current = requestAnimationFrame(update);
-    };
-    animationFrameRef.current = requestAnimationFrame(update);
-  }, [setStatus]);
-
-  const stopTimer = useCallback(() => {
-    cancelAnimationFrame(animationFrameRef.current);
-    const finalDelta = performance.now() - startTimeRef.current;
-
-    if (timerRef.current) {
-      timerRef.current.textContent = formatTime(finalDelta);
-    }
-
-    addSolve(finalDelta);
-  }, [addSolve]);
-
-  // Inspection Logic
-  useEffect(() => {
-    let interval: number;
+  const onDown = () => {
     if (status === "inspecting") {
-      inspectionRef.current = 15;
-      if (timerRef.current) {
-        timerRef.current.textContent = "15";
-      }
-
-      interval = window.setInterval(() => {
-        inspectionRef.current -= 1;
-        if (timerRef.current) {
-          timerRef.current.textContent = inspectionRef.current.toString();
-          if (inspectionRef.current <= 3) {
-            timerRef.current.style.color = "var(--main-color)";
-          }
-        }
-        if (inspectionRef.current <= 0) {
-          clearInterval(interval);
-          startTimer();
-        }
-      }, 1000);
-    } else if (timerRef.current && status !== "running") {
-      timerRef.current.style.color = "";
+      readyTimeoutRef.current = setTimeout(() => {
+        setReadyToSolve(true);
+      }, HOLD_TO_CONFIRM_MS);
+    } else if (status === "running") {
+      const endTime = performance.now();
+      const elapsed = endTime - (startTimeRef.current ?? endTime);
+      // Force update final time before re-mounting react-managed div
+      timerRef.current!.textContent = formatTime(elapsed);
+      setStatus("stopped");
+      setSolveTime(elapsed);
     }
-    return () => clearInterval(interval);
-  }, [status, startTimer]);
+  };
 
-  useSpacebar(startTimer, stopTimer);
+  const onUp = () => {
+    clearTimeout(readyTimeoutRef.current!);
+    if (status === "idle") {
+      setStatus("inspecting");
+    } else if (status === "inspecting" && readyToSolve) {
+      setStatus("running");
+      setReadyToSolve(false);
+    } else if (status === "stopped") {
+      setStatus("idle");
+    }
+  };
 
-  return (
-    <div className="grid grid-rows-[1fr_auto_1fr] h-[60vh] place-items-center w-full max-w-4xl mx-auto">
-      <div />
+  // local state to track ready to solve after inspection.
+  // will set true after held down for HOLD_TO_CONFIRM_MS in inspection.
+  const pressed = useSpacebar(onDown, onUp);
 
-      <div
-        ref={timerRef}
-        className="text-8xl md:text-9xl font-mono font-medium transition-colors duration-100 select-none tabular-nums"
-      >
-        {status === "idle" ? "0.00" : ""}
-      </div>
+  const holdingBeforeInspection =
+    status === "stopped" || (status === "idle" && pressed);
+  const holdingDuringInspection = status === "inspecting" && pressed;
 
-      <div className="text-sub text-base h-6 font-mono self-start mt-8">
-        {status === "running" ? "" : "press space to start"}
-      </div>
+  const timerClass = clsx("text-2xl font-bold", {
+    "text-ok":
+      holdingBeforeInspection || (holdingDuringInspection && readyToSolve),
+    "text-warning": holdingDuringInspection && !readyToSolve,
+  });
+
+  return status === "running" ? (
+    <div className={timerClass} ref={timerRef}>
+      {/* This div will hold the ref for the animated timer*/}
+    </div>
+  ) : (
+    <div className={timerClass}>
+      {/* {status} {inspectSeconds} {inspectPenalty} {formatTime(solveTime)} */}
+      {calculateTimerText(status, solveTime, inspectPenalty, inspectSeconds)}
     </div>
   );
 };

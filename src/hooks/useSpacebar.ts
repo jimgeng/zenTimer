@@ -1,56 +1,34 @@
-import { useEffect, useRef } from "react";
-import { useTimerStore } from "../store/useTimerStore";
+import { useEffect, useState, useRef } from "react";
 
-export const useSpacebar = (onStart: () => void, onStop: () => void) => {
-  const { status, inspectionEnabled, setStatus } = useTimerStore();
-  const isHolding = useRef(false);
-  const holdTimeout = useRef<number | null>(null);
-  const isReady = useRef(false);
+const useSpacebar = (onDown?: () => void, onUp?: () => void) => {
+  const [pressed, setPressed] = useState(false);
+
+  // Use refs for callbacks to avoid re-attaching listeners if functions change
+  const onDownRef = useRef(onDown);
+  const onUpRef = useRef(onUp);
+
+  useEffect(() => {
+    onDownRef.current = onDown;
+    onUpRef.current = onUp;
+  }, [onDown, onUp]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code !== "Space" || e.repeat) return;
+
+      // Stop page from scrolling
       e.preventDefault();
 
-      if (status === "running") {
-        onStop();
-        return;
-      }
-
-      if (status === "inspecting") {
-        onStart(); // Start solve immediately from inspection
-        return;
-      }
-
-      if (status === "idle" || status === "stopped") {
-        isHolding.current = true;
-        // Visual feedback for "ready" state (csTimer style)
-        // We could use a callback for this, but for now we just track it
-        holdTimeout.current = window.setTimeout(() => {
-          if (isHolding.current) {
-            isReady.current = true;
-            // Trigger visual cue if needed
-          }
-        }, 300);
-      }
+      setPressed(true);
+      onDownRef.current?.();
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
       if (e.code !== "Space") return;
-      e.preventDefault();
 
-      if (isHolding.current) {
-        if (isReady.current) {
-          if (inspectionEnabled) {
-            setStatus("inspecting");
-          } else {
-            onStart();
-          }
-        }
-        isHolding.current = false;
-        isReady.current = false;
-        if (holdTimeout.current) clearTimeout(holdTimeout.current);
-      }
+      e.preventDefault();
+      setPressed(false);
+      onUpRef.current?.();
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -60,7 +38,9 @@ export const useSpacebar = (onStart: () => void, onStop: () => void) => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [status, inspectionEnabled, onStart, onStop, setStatus]);
+  }, []); // Empty array: listeners are attached once
 
-  return { isReady: isReady.current };
+  return pressed;
 };
+
+export default useSpacebar;
