@@ -1,7 +1,13 @@
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap");
 @import "tailwindcss";
 
 @theme {
+  --font-mono:
+    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+
   --color-bg: var(--bg-color);
+  --color-sub-bg: var(--sub-bg-color);
   --color-main: var(--main-color);
   --color-accent: var(--accent-color);
   --color-ok: var(--green-color);
@@ -12,6 +18,7 @@
 
 :root {
   --bg-color: #323437;
+  --sub-bg-color: #2c2e31;
   --main-color: #14c0e2;
   --accent-color: #1496e2;
   --text-color: #d1d0c5;
@@ -21,11 +28,39 @@
 }
 
 body {
-  @apply bg-bg text-text transition-colors duration-200;
+  @apply bg-bg text-text;
   margin: 0;
   font-family:
     "Inter",
     system-ui,
     -apple-system,
     sans-serif;
+}
+
+@layer components {
+  .layout-grid {
+    display: grid;
+    width: 100%;
+
+    grid-template-columns:
+      [left-start full-start] 1fr [left-end main-start] minmax(600px, 4fr)
+      [main-end right-start] 1fr [right-end full-end];
+    grid-template-rows: [full-start] auto [content-start] 1fr [content-end] auto [full-end];
+  }
+}
+
+@utility full-column {
+  grid-column: full;
+}
+
+@utility left-column {
+  grid-column: left;
+}
+
+@utility right-column {
+  grid-column: right;
+}
+
+@utility main-column {
+  grid-column: main;
 }
