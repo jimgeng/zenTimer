@@ -10,7 +10,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@heroicons/react": "^2.2.0",
     "clsx": "^2.1.1",
     "cubing": "^0.63.3",
     "nanoid": "^5.1.6",

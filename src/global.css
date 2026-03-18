@@ -1,0 +1,15 @@
+/* 1. Define the base behavior */
+.hide-on-solve {
+  opacity: 1;
+  /* This transition stays active even when the data-attribute is removed */
+  transition:
+    opacity 0.25s ease,
+    visibility 0.25s ease;
+}
+
+/* 2. Define the state-specific values */
+:is([data-timer-status="running"], [data-timer-status="inspecting"])
+  .hide-on-solve {
+  opacity: var(--solve-opacity, 0);
+  pointer-events: none;
+}

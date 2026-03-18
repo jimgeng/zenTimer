@@ -57,17 +57,15 @@ const TimerDisplay = () => {
     status === "stopped" || (status === "idle" && pressed);
   const holdingDuringInspection = status === "inspecting" && pressed;
 
-  const timerClass = clsx({
+  const timerClass = clsx("transition-[scale,color] duration-150", {
     "text-ok":
       holdingBeforeInspection || (holdingDuringInspection && readyToSolve),
     "text-warning": holdingDuringInspection && !readyToSolve,
-    "transition-scale duration-150":
-      status === "idle" || status === "inspecting",
     "scale-110": holdingDuringInspection && readyToSolve,
   });
 
   return status === "running" ? (
-    <div ref={timerRef}>
+    <div ref={timerRef} className="scale-110">
       {/* This div will hold the ref for the animated timer*/}
     </div>
   ) : (

@@ -6,6 +6,8 @@
     "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     "Liberation Mono", "Courier New", monospace;
 
+  --color-*: initial;
+  --color-black: var(--black);
   --color-bg: var(--bg-color);
   --color-sub-bg: var(--sub-bg-color);
   --color-main: var(--main-color);
@@ -17,6 +19,7 @@
 }
 
 :root {
+  --black: #242628;
   --bg-color: #323437;
   --sub-bg-color: #2c2e31;
   --main-color: #14c0e2;
@@ -25,6 +28,8 @@
   --sub-color: #646669;
   --green-color: #59c65d;
   --yellow-color: #ffeb3b;
+
+  --solve-opacity: 0;
 }
 
 body {
@@ -43,24 +48,28 @@ body {
     width: 100%;
 
     grid-template-columns:
-      [left-start full-start] 1fr [left-end main-start] minmax(600px, 4fr)
+      [left-start full-start] 1fr [left-end main-start] minmax(600px, 2fr)
       [main-end right-start] 1fr [right-end full-end];
     grid-template-rows: [full-start] auto [content-start] 1fr [content-end] auto [full-end];
   }
 }
 
-@utility full-column {
-  grid-column: full;
-}
-
-@utility left-column {
-  grid-column: left;
-}
-
-@utility right-column {
-  grid-column: right;
-}
-
-@utility main-column {
-  grid-column: main;
+@layer utilities {
+  .full-column {
+    grid-column: full;
+  }
+  .left-column {
+    grid-column: left;
+  }
+  .right-column {
+    grid-column: right;
+  }
+  .main-column {
+    grid-column: main;
+  }
+  .transition-snappy {
+    transition:
+      background-color 300ms cubic-bezier(0.4, 0, 0.2, 1),
+      scale 300ms cubic-bezier(0.34, 1.56, 0.64, 1); /* Bouncy ease-out */
+  }
 }
