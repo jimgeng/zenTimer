@@ -13,3 +13,16 @@
   opacity: var(--solve-opacity, 0);
   pointer-events: none;
 }
+
+@keyframes fadeToWhite {
+  0% {
+    color: var(--color-ok);
+  } /* Tailwind's green-500 */
+  100% {
+    color: var(--color-text);
+  } /* White */
+}
+
+.animate-mount-glow {
+  animation: fadeToWhite 1s ease-out forwards;
+}

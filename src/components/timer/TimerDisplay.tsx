@@ -8,7 +8,7 @@ import { usePrecisTimer } from "../../hooks/usePrecisTimer";
 import { calculateTimerText } from "../../utils/timeHelpers";
 
 const TimerDisplay = () => {
-  const { status, setStatus } = useTimerStore();
+  const { status, setStatus, addSolve, generateScramble } = useTimerStore();
 
   // ready must be a state since we update color to be green on ready.
   // resettedAfterSolveRef is a ref since it's just used to track whether
@@ -33,6 +33,7 @@ const TimerDisplay = () => {
       const elapsed = endTime - (startTimeRef.current ?? endTime);
       setStatus("stopped");
       setSolveTime(elapsed);
+      addSolve(elapsed, true);
     }
   };
 
@@ -43,6 +44,7 @@ const TimerDisplay = () => {
     } else if (status === "inspecting" && readyToSolve) {
       setStatus("running");
       setReadyToSolve(false);
+      generateScramble();
     } else if (status === "stopped") {
       setStatus("idle");
     }

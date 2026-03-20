@@ -27,7 +27,8 @@ export default function Button({
   return (
     <button
       className={clsx(
-        "flex items-center justify-center gap-2 rounded-md transition-snappy  focus-visible:outline-2 outline-sub",
+        "flex items-center justify-center gap-2 rounded-md  focus-visible:outline-2 outline-sub",
+        !className?.includes("transition") && "transition-snappy",
         {
           "text-sub": props.disabled,
           "bg-sub-bg": variant === "standout",

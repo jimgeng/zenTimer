@@ -3,6 +3,8 @@ import SolveEdit from "./components/timer/SolveEdit";
 import TimerDisplay from "./components/timer/TimerDisplay";
 import { useTimerStore } from "./store/useTimerStore";
 import { SOLVE_UI_OPACITY } from "./utils/constants";
+import SolveList from "./components/solvelist/SolveList";
+import ScrambleDisplay from "./components/ScrambleDisplay";
 
 function App() {
   const { status } = useTimerStore();
@@ -17,16 +19,15 @@ function App() {
   return (
     <div
       data-timer-status={status}
-      className="font-mono h-svh layout-grid p-8 gap-y-4"
+      className="font-sans h-svh layout-grid p-8 gap-y-4"
     >
-      <header className="text-main text-4xl font-bold full-column">
-        monkeTimer
+      <header className="text-main text-4xl full-column">
+        <h1>monkeTimer</h1>
       </header>
-      <main className="main-column grid grid-rows-[1fr_auto_1fr]">
+      <SolveList />
+      <main className="main-column grid grid-rows-[1fr_auto_1fr] font-mono">
         <div className="text-lg flex justify-center self-start transition-opacity hide-on-solve">
-          <div className="p-4 text-xl bg-sub-bg rounded-xl">
-            U2 B2 D' R' F' L D F2 R' U2 B2 R D2 B2 D2 L B2 U B'
-          </div>
+          <ScrambleDisplay />
         </div>
         <div className="text-8xl font-bold place-self-center text-center select-none flex flex-col gap-4">
           <TimerDisplay />
