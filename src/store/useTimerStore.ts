@@ -16,16 +16,13 @@ export interface Solve {
 interface TimerState {
   status: TimerStatus;
   currentScramble: string;
-  nextScramble: string;
   solves: Solve[];
   inspectionEnabled: boolean;
 
   // Actions
   setStatus: (status: TimerStatus) => void;
   setScramble: (scramble: string) => void;
-  cycleToNextScramble: () => void; // sets next scramble as current scramble.
-  generateScramble: () => void; // for generating scramble during inspection without updating current scramble until solve is added.
-  bootstrap: () => void; // generates initial scramble on app load, with logic to prevent overwriting existing scrambles on returning visits.
+  generateNewScramble: () => void; // for generating scramble during inspection without updating current scramble until solve is added.
   addSolve: (timeMs: number, newScramble?: boolean) => void;
   toggleInspection: () => void;
   deleteSolve: (id: string) => void;
@@ -39,16 +36,15 @@ const scrambleWorker = new Worker(
 
 export const useTimerStore = create<TimerState>()(
   persist(
-    (set, get) => {
+    (set) => {
       // Setup listener for receiving scrambles from the worker.
       scrambleWorker.onmessage = (e) => {
-        set({ nextScramble: e.data.scramble });
+        set({ currentScramble: e.data.scramble });
       };
 
       return {
         status: "idle",
         currentScramble: "",
-        nextScramble: "",
         solves: [],
         inspectionEnabled: true,
 
@@ -57,39 +53,14 @@ export const useTimerStore = create<TimerState>()(
 
         // Scramble management
         setScramble: (currentScramble) => set({ currentScramble }),
-        cycleToNextScramble: () => {
-          set((state) => ({ currentScramble: state.nextScramble }));
-        },
-        generateScramble: () => {
+        generateNewScramble: () => {
           // Generate a new scramble without updating the current one.
           // Will need to adapt different types of scrambles in the future, for now just 3x3.
           scrambleWorker.postMessage("generate");
         },
 
-        // For first time users
-        bootstrap: () => {
-          // Generate the initial scramble on app load.
-          const { currentScramble, nextScramble } = get();
-          // 1. If we have absolutely nothing (First visit)
-          if (!currentScramble && !nextScramble) {
-            // Temporary listener to catch the FIRST one and put it in 'current'
-            const initListener = (e: MessageEvent) => {
-              set({ currentScramble: e.data.scramble });
-              scrambleWorker.removeEventListener("message", initListener);
-              get().generateScramble();
-            };
-            scrambleWorker.addEventListener("message", initListener);
-            scrambleWorker.postMessage("generate");
-            return;
-          }
-          // 2. If we have a current but NO next (Returning user)
-          if (currentScramble && !nextScramble) {
-            get().generateScramble();
-          }
-        },
-
         // Solve management
-        addSolve: (timeMs, newScramble?: boolean) =>
+        addSolve: (timeMs, newScramble?: boolean) => {
           set((state) => ({
             solves: [
               {
@@ -101,10 +72,11 @@ export const useTimerStore = create<TimerState>()(
               },
               ...state.solves,
             ],
-            currentScramble: newScramble
-              ? state.nextScramble
-              : state.currentScramble,
-          })),
+          }));
+          if (newScramble) {
+            scrambleWorker.postMessage("generate");
+          }
+        },
         deleteSolve: (id) =>
           set((state) => ({
             solves: state.solves.filter((s) => s.id !== id),
@@ -122,7 +94,6 @@ export const useTimerStore = create<TimerState>()(
         solves: state.solves,
         inspectionEnabled: state.inspectionEnabled,
         currentScramble: state.currentScramble,
-        nextScramble: state.nextScramble,
       }),
     },
   ),

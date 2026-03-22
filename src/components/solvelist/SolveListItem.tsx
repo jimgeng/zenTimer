@@ -9,9 +9,15 @@ interface SolveListItemProps {
   solve: Solve;
   index: number;
   latestSolve?: boolean; // for animating new solves, will be true for the most recent solve when added.
+  digitWidth: number; // stupid logic to make the number count fit when the digits grow.
 }
 
-const SolveListItem = ({ solve, index, latestSolve }: SolveListItemProps) => {
+const SolveListItem = ({
+  solve,
+  index,
+  latestSolve,
+  digitWidth,
+}: SolveListItemProps) => {
   const deleteThisSolve = () => {
     useTimerStore.getState().deleteSolve(solve.id);
   };
@@ -20,7 +26,15 @@ const SolveListItem = ({ solve, index, latestSolve }: SolveListItemProps) => {
 
   return (
     <div className="group text-lg grid grid-cols-[auto_3fr_1fr] gap-x-2">
-      <h4 className="text-sub row-span-2 w-8">#{index}</h4>
+      <h4
+        className={clsx("text-sub row-span-2 text-right border-l-4 border-bg", {
+          "w-8": digitWidth === 1,
+          "w-10": digitWidth === 2,
+          "w-16": digitWidth === 3,
+        })}
+      >
+        #{index}
+      </h4>
       <h3
         className={clsx("text-2xl font-light", {
           "animate-mount-glow": stoppedStatus && latestSolve,
@@ -28,18 +42,23 @@ const SolveListItem = ({ solve, index, latestSolve }: SolveListItemProps) => {
       >
         {formatTime(solve.timeMs)}
       </h3>
-      <p className="text-sub col-start-2 text-sm text-ellipsis text-nowrap min-w-0 overflow-hidden">
-        {solve.scramble}
-      </p>
-      <div className="flex row-start-1 col-start-3 row-span-2 justify-end">
+      <div className="flex justify-between text-sub col-start-2 min-w-0">
+        <p className="text-sm shrink min-w-0 text-ellipsis text-nowrap overflow-hidden">
+          {solve.scramble}
+        </p>
+        <p className="text-sm grow text-nowrap">
+          {new Date(solve.date).toLocaleDateString()}
+        </p>
+      </div>
+      <div className="flex row-start-1 col-start-3 row-span-2 justify-center">
         <Button
-          className="text-sub group-hover:opacity-100 hover:opacity-100 opacity-0 transition-opacity"
+          className="text-sub group-hover:opacity-100 hover:opacity-100 opacity-0 transition-opacity w-full"
           size="md"
           variant="subtle"
           icon={InfoIcon}
         />
         <Button
-          className="text-sub group-hover:opacity-100 hover:opacity-100 opacity-0 transition-opacity"
+          className="text-sub group-hover:opacity-100 hover:opacity-100 opacity-0 transition-opacity w-full"
           size="md"
           variant="subtle"
           icon={TrashIcon}

@@ -8,12 +8,8 @@ import { usePrecisTimer } from "../../hooks/usePrecisTimer";
 import { calculateTimerText } from "../../utils/timeHelpers";
 
 const TimerDisplay = () => {
-  const { status, setStatus, addSolve, generateScramble } = useTimerStore();
+  const { status, setStatus, addSolve } = useTimerStore();
 
-  // ready must be a state since we update color to be green on ready.
-  // resettedAfterSolveRef is a ref since it's just used to track whether
-  // we should go to inspecting on space down from idle, and doesn't affect rendering.
-  // if i can get away with not using state i will do it.
   const [readyToSolve, setReadyToSolve] = useState(false);
   const [solveTime, setSolveTime] = useState(0);
   const readyTimeoutRef = useRef<number | null>(null);
@@ -44,7 +40,6 @@ const TimerDisplay = () => {
     } else if (status === "inspecting" && readyToSolve) {
       setStatus("running");
       setReadyToSolve(false);
-      generateScramble();
     } else if (status === "stopped") {
       setStatus("idle");
     }

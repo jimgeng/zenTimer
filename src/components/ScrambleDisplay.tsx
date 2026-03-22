@@ -5,8 +5,10 @@ export default function ScrambleDisplay() {
   const { currentScramble } = useTimerStore();
 
   useEffect(() => {
-    useTimerStore.getState().bootstrap(); // generate initial scramble on app load.
-  }, []);
+    if (!currentScramble) {
+      useTimerStore.getState().generateNewScramble();
+    }
+  }, [currentScramble]);
 
   return (
     <div className="p-3 text-center text-xl/6 font-semibold bg-sub-bg rounded-lg">

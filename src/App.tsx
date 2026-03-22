@@ -22,7 +22,7 @@ function App() {
       className="font-sans h-svh layout-grid p-8 gap-y-4"
     >
       <header className="text-main text-4xl full-column">
-        <h1>monkeTimer</h1>
+        <h1>zenTimer</h1>
       </header>
       <SolveList />
       <main className="main-column grid grid-rows-[1fr_auto_1fr] font-mono">
