@@ -18,6 +18,7 @@
   --color-accent: var(--accent-color);
   --color-ok: var(--green-color);
   --color-warning: var(--yellow-color);
+  --color-danger: var(--red-color);
   --color-text: var(--text-color);
   --color-sub: var(--sub-color);
 }
@@ -32,6 +33,7 @@
   --sub-color: #646669;
   --green-color: #59c65d;
   --yellow-color: #ffeb3b;
+  --red-color: #f44336;
 
   --solve-opacity: 0;
 }

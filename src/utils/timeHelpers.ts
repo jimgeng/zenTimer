@@ -24,8 +24,6 @@ export const calculateTimerText = (
 ) => {
   // TODO: move dnf and +2 displayinto a different component so it looks nicer later on.
   if (status === "idle" || status === "stopped") {
-    if (penalty === "DNF") return formatTime(time) + " (DNF)";
-    if (penalty === "+2") return formatTime(time + 2000) + " (+2)";
     return formatTime(time);
   }
   if (status === "inspecting") {

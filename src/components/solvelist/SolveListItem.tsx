@@ -22,6 +22,9 @@ const SolveListItem = ({
     useTimerStore.getState().deleteSolve(solve.id);
   };
 
+  const officialTime =
+    solve.penalty === "+2" ? solve.timeMs + 2000 : solve.timeMs;
+
   const stoppedStatus = useTimerStore.getState().status === "stopped";
 
   return (
@@ -40,9 +43,19 @@ const SolveListItem = ({
           "animate-mount-glow": stoppedStatus && latestSolve,
         })}
       >
-        {formatTime(solve.timeMs)}
+        {formatTime(officialTime)}
+        {solve.penalty === "+2" && (
+          <span className="font-mono text-xs font-bold text-warning rounded-sm p-0.5">
+            +2
+          </span>
+        )}
+        {solve.penalty === "DNF" && (
+          <span className="font-mono text-xs font-bold text-danger rounded-sm p-0.5">
+            DNF
+          </span>
+        )}
       </h3>
-      <div className="flex justify-between text-sub col-start-2 min-w-0">
+      <div className="flex gap-1 justify-between text-sub col-start-2 min-w-0">
         <p className="text-sm shrink min-w-0 text-ellipsis text-nowrap overflow-hidden">
           {solve.scramble}
         </p>

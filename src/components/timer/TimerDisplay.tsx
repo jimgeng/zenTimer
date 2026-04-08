@@ -8,14 +8,22 @@ import { usePrecisTimer } from "../../hooks/usePrecisTimer";
 import { calculateTimerText } from "../../utils/timeHelpers";
 
 const TimerDisplay = () => {
-  const { status, setStatus, addSolve } = useTimerStore();
+  const status = useTimerStore((state) => state.status);
+  const setSelectedSolveID = useTimerStore((state) => state.setSelectedSolveID);
+  const setStatus = useTimerStore((state) => state.setStatus);
+  const addSolve = useTimerStore((state) => state.addSolve);
+
+  const solveTime = useTimerStore(
+    (state) =>
+      state.solves.filter((s) => s.id === state.selectedSolveID)[0]?.timeMs ??
+      0,
+  );
 
   const [readyToSolve, setReadyToSolve] = useState(false);
-  const [solveTime, setSolveTime] = useState(0);
   const readyTimeoutRef = useRef<number | null>(null);
   const { seconds: inspectSeconds, penalty: inspectPenalty } =
     useInspection(status);
-  const timerRef = useRef<HTMLDivElement>(null);
+  const timerRef = useRef<HTMLSpanElement>(null);
 
   const startTimeRef = usePrecisTimer(status, timerRef);
 
@@ -28,8 +36,8 @@ const TimerDisplay = () => {
       const endTime = performance.now();
       const elapsed = endTime - (startTimeRef.current ?? endTime);
       setStatus("stopped");
-      setSolveTime(elapsed);
-      addSolve(elapsed, true);
+      const id = addSolve(elapsed, inspectPenalty, true);
+      setSelectedSolveID(id);
     }
   };
 
@@ -54,20 +62,43 @@ const TimerDisplay = () => {
     status === "stopped" || (status === "idle" && pressed);
   const holdingDuringInspection = status === "inspecting" && pressed;
 
-  const timerClass = clsx("transition-[scale,color] duration-150", {
-    "text-ok":
-      holdingBeforeInspection || (holdingDuringInspection && readyToSolve),
-    "text-warning": holdingDuringInspection && !readyToSolve,
-    "scale-110": holdingDuringInspection && readyToSolve,
-  });
+  const timerClass = clsx(
+    "transition-[scale,color] duration-150 inline-block",
+    {
+      "text-ok":
+        holdingBeforeInspection || (holdingDuringInspection && readyToSolve),
+      "text-warning": holdingDuringInspection && !readyToSolve,
+      "scale-110": holdingDuringInspection && readyToSolve,
+    },
+  );
 
-  return status === "running" ? (
-    <div ref={timerRef} className="scale-110">
-      {/* This div will hold the ref for the animated timer*/}
-    </div>
-  ) : (
-    <div className={timerClass}>
-      {calculateTimerText(status, solveTime, inspectPenalty, inspectSeconds)}
+  const timerText = calculateTimerText(
+    status,
+    solveTime,
+    inspectPenalty,
+    inspectSeconds,
+  );
+  console.log(`solveTime: ${solveTime}`);
+
+  return (
+    <div>
+      {status === "running" ? (
+        <span ref={timerRef} className="scale-110 inline-block">
+          {/* This span will hold the ref for the animated timer*/}
+        </span>
+      ) : (
+        <span className={timerClass}>{timerText}</span>
+      )}
+      {(status === "idle" || status === "stopped") &&
+        (inspectPenalty === "+2" ? (
+          <span className="text-base font-bold text-warning absolute ml-1 mt-1.5">
+            +2{" "}
+          </span>
+        ) : inspectPenalty === "DNF" ? (
+          <span className="text-base font-bold text-danger absolute ml-1 mt-1.5">
+            DNF
+          </span>
+        ) : null)}
     </div>
   );
 };
