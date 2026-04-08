@@ -16,6 +16,7 @@ export interface Solve {
 interface TimerState {
   status: TimerStatus;
   currentScramble: string;
+  scrambleHistory: string[];
   solves: Solve[];
   selectedSolveID: string | null; // for editing specific solves in the future, currently just used for the most recent solve after it's added.
   inspectionEnabled: boolean;
@@ -26,7 +27,8 @@ interface TimerState {
 
   // Scramble management
   setScramble: (scramble: string) => void;
-  generateNewScramble: () => void; // for generating scramble during inspection without updating current scramble until solve is added.
+  generateNewScramble: () => void;
+  goToPreviousScramble: () => void;
 
   // Solve management
   setSelectedSolveID: (id: string | null) => void;
@@ -61,6 +63,7 @@ export const useTimerStore = create<TimerState>()(
       return {
         status: "idle",
         currentScramble: "",
+        scrambleHistory: [],
         solves: [],
         selectedSolveID: null,
         inspectionEnabled: true,
@@ -73,8 +76,20 @@ export const useTimerStore = create<TimerState>()(
         generateNewScramble: () => {
           // Generate a new scramble without updating the current one.
           // Will need to adapt different types of scrambles in the future, for now just 3x3.
+          set((state) => ({
+            scrambleHistory: [state.currentScramble, ...state.scrambleHistory],
+          }));
           scrambleWorker.postMessage("generate");
         },
+        goToPreviousScramble: () =>
+          set((state) => {
+            if (state.scrambleHistory.length === 0) return {};
+            const [previousScramble, ...restHistory] = state.scrambleHistory;
+            return {
+              currentScramble: previousScramble,
+              scrambleHistory: restHistory,
+            };
+          }),
 
         // Solve management
         setSelectedSolveID: (selectedSolveID) => set({ selectedSolveID }),
@@ -91,6 +106,7 @@ export const useTimerStore = create<TimerState>()(
               },
               ...state.solves,
             ],
+            scrambleHistory: [state.currentScramble, ...state.scrambleHistory],
           }));
           if (newScramble) {
             scrambleWorker.postMessage("generate");
