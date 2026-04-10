@@ -1,15 +1,24 @@
-import { useTimerStore } from "../../store/useTimerStore";
+import { useSessionStore } from "../../store/useSessionStore";
 import SolveListItem from "./SolveListItem";
 
+const emptySolves: never[] = [];
+
 const SolveList = () => {
-  const solves = useTimerStore((state) => state.solves);
+  const solves = useSessionStore((state) => {
+    const activeSession = state.activeSessionId
+      ? state.sessionsById[state.activeSessionId]
+      : undefined;
+    return activeSession?.solves ?? emptySolves;
+  });
   const digitWidth = Math.floor(Math.log10(solves.length)) + 1; // calculate how many digits we need for the index number, to adjust width accordingly.
 
   return (
     <div className="hide-on-solve bg-sub-bg rounded-xl left-column min-h-0 flex flex-col">
-      <div className="text-xl/6 p-6 leading-5 border-b-4 border-bg">SOLVES</div>
+      <div className="text-2xl/6 p-6 leading-5 border-b-4 border-bg">
+        Solves
+      </div>
       {/* Placeholders, will replace with SolveItemList once logic is implemented. */}
-      <div className="p-6 flex flex-col gap-6 h-full overflow-y-auto">
+      <div className="p-6 flex flex-col gap-4 h-full overflow-y-auto">
         {solves.length === 0 ? (
           <p className="text-sub text-center">No solves yet. Get to it!</p>
         ) : (

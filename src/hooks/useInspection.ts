@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import type { Penalty, TimerStatus } from "../store/useTimerStore";
+import type { TimerStatus } from "../store/useTimerStore";
+import type { Penalty } from "../models/solve";
 import { INSPECTION_TIME_S } from "../utils/constants";
 
 export const useInspection = (status: TimerStatus) => {

@@ -1,17 +1,23 @@
 import { useEffect } from "react";
 import TrashIcon from "../../assets/icons/TrashIcon";
-import { useTimerStore, type Penalty } from "../../store/useTimerStore";
+import type { Penalty } from "../../models/solve";
+import { useSessionStore } from "../../store/useSessionStore";
 import Button from "../shared/Button";
 import clsx from "clsx";
 
 const BUTTON_SIZE = "sm";
 
 export default function SolveEdit() {
-  const selectedSolveID = useTimerStore((state) => state.selectedSolveID);
-  const setSelectedSolveID = useTimerStore((state) => state.setSelectedSolveID);
-  const solve = useTimerStore((state) =>
-    state.solves.find((s) => s.id === selectedSolveID),
+  const selectedSolveID = useSessionStore((state) => state.selectedSolveID);
+  const setSelectedSolveID = useSessionStore(
+    (state) => state.setSelectedSolveID,
   );
+  const solve = useSessionStore((state) => {
+    const activeSession = state.activeSessionId
+      ? state.sessionsById[state.activeSessionId]
+      : undefined;
+    return activeSession?.solves.find((s) => s.id === selectedSolveID);
+  });
 
   const disabled = selectedSolveID === null || solve === undefined;
 
@@ -30,9 +36,13 @@ export default function SolveEdit() {
 
   const togglePenalty = (penalty: Penalty) => {
     if (solve && solve?.penalty !== penalty) {
-      useTimerStore.getState().editSolve(solve!.id, { newPenalty: penalty });
+      useSessionStore
+        .getState()
+        .editSolveInActiveSession(solve.id, { newPenalty: penalty });
     } else if (solve && solve?.penalty === penalty) {
-      useTimerStore.getState().editSolve(solve!.id, { newPenalty: "none" });
+      useSessionStore
+        .getState()
+        .editSolveInActiveSession(solve.id, { newPenalty: "none" });
     }
   };
 
@@ -43,7 +53,7 @@ export default function SolveEdit() {
     togglePenalty("DNF");
   };
   const onDelete = () => {
-    useTimerStore.getState().deleteSolve(selectedSolveID!);
+    useSessionStore.getState().deleteSolveFromActiveSession(selectedSolveID!);
     setSelectedSolveID(null);
   };
 

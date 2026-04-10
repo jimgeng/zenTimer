@@ -3,6 +3,17 @@ import { useEffect, useState, useRef } from "react";
 const useSpacebar = (onDown?: () => void, onUp?: () => void) => {
   const [pressed, setPressed] = useState(false);
 
+  const isEditableTarget = (target: EventTarget | null) => {
+    if (!(target instanceof HTMLElement)) return false;
+
+    return (
+      target.tagName === "INPUT" ||
+      target.tagName === "TEXTAREA" ||
+      target.isContentEditable ||
+      target.getAttribute("role") === "textbox"
+    );
+  };
+
   // Use refs for callbacks to avoid re-attaching listeners if functions change
   const onDownRef = useRef(onDown);
   const onUpRef = useRef(onUp);
@@ -14,6 +25,7 @@ const useSpacebar = (onDown?: () => void, onUp?: () => void) => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (isEditableTarget(e.target)) return;
       if (e.code !== "Space" || e.repeat) return;
 
       // Stop page from scrolling
@@ -24,6 +36,7 @@ const useSpacebar = (onDown?: () => void, onUp?: () => void) => {
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
+      if (isEditableTarget(e.target)) return;
       if (e.code !== "Space") return;
 
       e.preventDefault();

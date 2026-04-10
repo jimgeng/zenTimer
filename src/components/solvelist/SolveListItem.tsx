@@ -1,7 +1,9 @@
 import clsx from "clsx";
 import InfoIcon from "../../assets/icons/InfoIcon";
 import TrashIcon from "../../assets/icons/TrashIcon";
-import { useTimerStore, type Solve } from "../../store/useTimerStore";
+import type { Solve } from "../../models/solve";
+import { useSessionStore } from "../../store/useSessionStore";
+import { useTimerStore } from "../../store/useTimerStore";
 import { formatTime } from "../../utils/timeHelpers";
 import Button from "../shared/Button";
 
@@ -19,7 +21,7 @@ const SolveListItem = ({
   digitWidth,
 }: SolveListItemProps) => {
   const deleteThisSolve = () => {
-    useTimerStore.getState().deleteSolve(solve.id);
+    useSessionStore.getState().deleteSolveFromActiveSession(solve.id);
   };
 
   const officialTime =

@@ -6,6 +6,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   text?: string;
   // This allows passing a component like: icon={TrashIcon}
   icon?: React.ElementType;
+  iconSide?: "left" | "right"; // Optional prop to specify icon position
 }
 
 export default function Button({
@@ -27,7 +28,7 @@ export default function Button({
   return (
     <button
       className={clsx(
-        "flex items-center justify-center gap-2 rounded-md  focus-visible:outline-2 outline-sub",
+        "flex items-center justify-center gap-2 rounded-md  focus-visible:outline-2 outline-sub cursor-pointer disabled:cursor-not-allowed",
         !className?.includes("transition") && "transition-snappy",
         {
           "text-sub": props.disabled,
@@ -36,6 +37,7 @@ export default function Button({
           // For subtle variant, we only want the hover effect if it's not disabled
           "hover:bg-sub-bg": variant === "subtle" && !props.disabled,
           "active:scale-95": !props.disabled,
+          "flex-row-reverse": Icon && props.iconSide === "right",
 
           // size classes
           "p-2 text-xs": size === "sm",

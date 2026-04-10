@@ -6,6 +6,7 @@ import { SOLVE_UI_OPACITY } from "./utils/constants";
 import SolveList from "./components/solvelist/SolveList";
 import ScrambleDisplay from "./components/scramble/ScrambleDisplay";
 import ScrambleTools from "./components/scramble/ScrambleTools";
+import SessionManager from "./components/sessions/SessionManager";
 
 function App() {
   const { status } = useTimerStore();
@@ -22,8 +23,13 @@ function App() {
       data-timer-status={status}
       className="font-sans h-svh layout-grid p-8 gap-y-4"
     >
-      <header className="text-main text-4xl full-column">
-        <h1>monkeyTimer</h1>
+      <header className="full-column">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <h1 className="text-main text-4xl font-bold tracking-tight">
+            monkeyTimer
+          </h1>
+          <SessionManager />
+        </div>
       </header>
       <SolveList />
       <main className="main-column grid grid-rows-[1fr_auto_1fr] font-mono">

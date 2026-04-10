@@ -1,4 +1,4 @@
-import type { Solve } from "../store/useTimerStore";
+import type { Solve } from "../models/solve";
 
 export const calculateAverage = (
   solves: Solve[],

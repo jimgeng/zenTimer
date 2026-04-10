@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import useSpacebar from "../../hooks/useSpacebar";
+import { useSessionStore } from "../../store/useSessionStore";
 import { useTimerStore } from "../../store/useTimerStore";
 import clsx from "clsx";
 import { HOLD_TO_CONFIRM_MS } from "../../utils/constants";
@@ -9,15 +10,29 @@ import { calculateTimerText } from "../../utils/timeHelpers";
 
 const TimerDisplay = () => {
   const status = useTimerStore((state) => state.status);
-  const setSelectedSolveID = useTimerStore((state) => state.setSelectedSolveID);
   const setStatus = useTimerStore((state) => state.setStatus);
-  const addSolve = useTimerStore((state) => state.addSolve);
-
-  const solveTime = useTimerStore(
-    (state) =>
-      state.solves.filter((s) => s.id === state.selectedSolveID)[0]?.timeMs ??
-      0,
+  const currentScramble = useTimerStore((state) => state.currentScramble);
+  const generateNewScramble = useTimerStore(
+    (state) => state.generateNewScramble,
   );
+
+  const setSelectedSolveID = useSessionStore(
+    (state) => state.setSelectedSolveID,
+  );
+  const addSolveToActiveSession = useSessionStore(
+    (state) => state.addSolveToActiveSession,
+  );
+  const selectedSolveID = useSessionStore((state) => state.selectedSolveID);
+
+  const solveTime = useSessionStore((state) => {
+    const activeSession = state.activeSessionId
+      ? state.sessionsById[state.activeSessionId]
+      : undefined;
+    return (
+      activeSession?.solves.find((solve) => solve.id === selectedSolveID)
+        ?.timeMs ?? 0
+    );
+  });
 
   const [readyToSolve, setReadyToSolve] = useState(false);
   const readyTimeoutRef = useRef<number | null>(null);
@@ -36,7 +51,12 @@ const TimerDisplay = () => {
       const endTime = performance.now();
       const elapsed = endTime - (startTimeRef.current ?? endTime);
       setStatus("stopped");
-      const id = addSolve(elapsed, inspectPenalty, true);
+      const id = addSolveToActiveSession({
+        timeMs: elapsed,
+        penalty: inspectPenalty,
+        scramble: currentScramble,
+      });
+      generateNewScramble();
       setSelectedSolveID(id);
     }
   };
@@ -78,7 +98,6 @@ const TimerDisplay = () => {
     inspectPenalty,
     inspectSeconds,
   );
-  console.log(`solveTime: ${solveTime}`);
 
   return (
     <div>
